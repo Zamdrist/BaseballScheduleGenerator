@@ -2,11 +2,14 @@
 
 namespace BaseBallSchedule.Core
 {
-    public class Game
+#if DEBUG
+	[Serializable]
+#endif
+	public class Game
     {
-        public Team HomeTeam { get; set; }
+        public string HomeTeam { get; set; }
 
-        public Team AwayTeam { get; set; }
+        public string AwayTeam { get; set; }
 
         public DateTime GameDate { get; set; }
     }

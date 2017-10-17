@@ -18,8 +18,8 @@ namespace BaseBallSchedule.Core
 		            schedule.GamesInSchedule.Add(
 			            new Game
 			            {
-				            AwayTeam = this.Teams[0],
-				            HomeTeam = this.Teams[1],
+				            AwayTeam = this.Teams[0].Name,
+				            HomeTeam = this.Teams[1].Name,
 				            GameDate = gameDate
 			            });
 	            }

@@ -1,8 +1,15 @@
 ﻿
+
+using System;
+
 namespace BaseBallSchedule.Core
 {
-    public class Team
-    {
+#if DEBUG
+	[Serializable]
+#endif
+	public class Team
+	{
+
 		public int LeagueId { get; set; }
 	    public int DivisionId { get; set; }
 		public League.Circuit League { get; set; }
