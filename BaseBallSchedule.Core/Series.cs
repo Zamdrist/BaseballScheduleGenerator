@@ -4,7 +4,8 @@ namespace BaseBallSchedule.Core
 {
 	public class Series
 	{
-		public readonly int[,] DivisionHomeGames =
+		public const int NumberOfDivisionHomeGames = 38;
+		public readonly int[,] HomeSeries =
 		{
 			{2, 3, 4},
 			{3, 3, 3},
@@ -12,7 +13,8 @@ namespace BaseBallSchedule.Core
 			{3, 3, 4}
 		};
 
-		public readonly int[,] DivisionAwayGames =
+		public const int NumberOfDivisionAwayGames = 38;
+		public readonly int[,] AwaySeries =
 		{
 			{3, 3, 4},
 			{3, 3, 4},

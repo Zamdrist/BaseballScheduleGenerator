@@ -1,12 +1,6 @@
 ﻿
-
-using System;
-
 namespace BaseBallSchedule.Core
 {
-#if DEBUG
-	[Serializable]
-#endif
 	public class Team
 	{
 
