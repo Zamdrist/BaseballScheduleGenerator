@@ -45,7 +45,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Schedule.cs" />
     <Compile Include="ScheduleGenerator.cs" />
-    <Compile Include="ScheduleGeneratorHelper.cs" />
     <Compile Include="Series.cs" />
     <Compile Include="Team.cs" />
   </ItemGroup>
