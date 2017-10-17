@@ -43,5 +43,19 @@ namespace BaseBallSchedule.Core
 			return this.NLTeams.SingleOrDefault(t => t.LeagueId.Equals(leagueId));
 		}
 
+		public Team GetRandomLeagueTeam(League.Circuit league, List<Team> nlTeams)
+		{
+			var r = new Random();
+			var id = r.Next(0, nlTeams.Count);
+			return nlTeams[id];
+		}
+
+		public Team GetRandomLeagueTeamByDivision(League.Circuit league, League.Division division, List<Team> nlTeams)
+		{
+			var r = new Random();
+			var id = r.Next(0, nlTeams.FindAll(t => t.Division == division).Count);
+			return nlTeams[id];
+		}
+
 	}
 }

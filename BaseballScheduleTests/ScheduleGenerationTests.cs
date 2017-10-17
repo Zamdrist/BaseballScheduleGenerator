@@ -1,17 +1,23 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using BaseBallSchedule.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BaseballScheduleUnitTests
 {
-    /// <summary>
-    /// For testing the Baseball Schedule Generator
-    /// </summary>
-    [TestClass]
+	/// <summary>
+	/// For testing the Baseball Schedule Generator
+	/// </summary>
+#if DEBUG
+	[Serializable]
+#endif
+	[TestClass]
     public class ScheduleGenerationTests
-    {
-	    //Arrange
-	    private readonly ScheduleGeneratorHelper _scheduleGeneratorHelper;
+	{
+
+		//Arrange
+		private readonly ScheduleGeneratorHelper _scheduleGeneratorHelper;
 
         public ScheduleGenerationTests()
 		{
@@ -145,8 +151,104 @@ namespace BaseballScheduleUnitTests
 	    [TestMethod]
 	    public void NumberOfGamesInSeries()
 	    {
+			var schedule = new Schedule();
+		    var gameDate = schedule.OpeningDay;
+			var series = new Series();
+		    var nlTeams = this._scheduleGeneratorHelper.NLTeams;
+
+			var homeTeam = this._scheduleGeneratorHelper.GetRandomLeagueTeam(League.Circuit.NL, nlTeams);
+		    nlTeams.Remove(homeTeam);
+			var awayTeam = this._scheduleGeneratorHelper.GetRandomLeagueTeam(League.Circuit.NL, nlTeams);
+
+			series.DivisionSeries = new List<Game>();
+
+		    for (var i = 0; i < Series.DivisionSeriesGames; i++)
+		    {
+			    series.DivisionSeries.Add(
+				    new Game {GameDate = gameDate,
+							  HomeTeam = homeTeam.Name,
+							  AwayTeam = awayTeam.Name});
+			    gameDate = gameDate.AddDays(1);
+		    }
+
+		    Assert.IsTrue(series.DivisionSeries.Count == Series.DivisionSeriesGames && homeTeam != null && awayTeam != null);
+	    }
+
+	    [TestMethod]
+	    public void NumberOfDivisionHomeGames()
+	    {
 		    var series = new Series();
-			Assert.IsTrue(series.DivisionSeries.Count == 3);
+		    var totalGames = 0;
+		    var rows = series.DivisionHomeGames.GetUpperBound(0);
+		    var columns = series.DivisionHomeGames.GetUpperBound(1);
+
+		    for (var r = 0; r <= rows; r++)
+		    {
+			    for (var c = 0; c <= columns; c++)
+			    {
+				    totalGames = totalGames + series.DivisionHomeGames[r, c];
+			    }
+		    }
+			Assert.IsTrue(totalGames == 38);
+
+	    }
+
+	    [TestMethod]
+	    public void NumerOfDivisionAwayGames()
+	    {
+		    var series = new Series();
+		    var totalGames = 0;
+		    var rows = series.DivisionAwayGames.GetUpperBound(0);
+		    var columns = series.DivisionAwayGames.GetUpperBound(1);
+
+		    for (var r = 0; r <= rows; r++)
+		    {
+			    for (var c = 0; c <= columns; c++)
+			    {
+				    totalGames = totalGames + series.DivisionAwayGames[r, c];
+			    }
+		    }
+			Assert.IsTrue(totalGames == 38);
+	    }
+
+	    [TestMethod]
+	    public void NumerOfScheduledDivisionHomeGames()
+	    {
+		    var schedule = new Schedule();
+		    var series = new Series();
+			var gameDate = schedule.OpeningDay;
+
+		    var westDivisionTeams = this._scheduleGeneratorHelper.NLTeams.FindAll(t => t.Division == League.Division.West);
+		    var homeTeam = this._scheduleGeneratorHelper.GetRandomLeagueTeamByDivision(League.Circuit.NL, League.Division.West, westDivisionTeams);
+		    westDivisionTeams.Remove(homeTeam);
+
+		    var awayTeam = new Team();
+			series.DivisionSeries = new List<Game>();
+			var rows = series.DivisionHomeGames.GetUpperBound(0);
+		    var columns = series.DivisionHomeGames.GetUpperBound(1);
+
+			for (var r = 0; r <= rows; r++)
+		    {
+			    for (var c = 0; c <= columns; c++)
+			    {
+				    for (var i = 0; i < series.DivisionHomeGames[r, c]; i++)
+				    {
+					    awayTeam = this._scheduleGeneratorHelper.GetRandomLeagueTeamByDivision(League.Circuit.NL, League.Division.West, westDivisionTeams);
+						series.DivisionSeries.Add( //Schedule game here
+						    new Game
+						    {
+							    GameDate = gameDate,
+							    HomeTeam = homeTeam.Name,
+							    AwayTeam = awayTeam.Name
+						    });
+					    gameDate = gameDate.AddDays(1);
+				    }
+				    westDivisionTeams.Remove(awayTeam);
+			    }
+			    westDivisionTeams = this._scheduleGeneratorHelper.NLTeams.FindAll(t => t.Division == League.Division.West && t != homeTeam);
+		    }
+		    Assert.IsTrue(series.DivisionSeries.Count == 38);
+
 	    }
 
 	}

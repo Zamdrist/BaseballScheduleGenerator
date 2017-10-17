@@ -4,14 +4,24 @@ namespace BaseBallSchedule.Core
 {
 	public class Series
 	{
-		public List<Game> DivisionSeries { get; set; } = new List<Game>();
-
-		public Series()
+		public readonly int[,] DivisionHomeGames =
 		{
-			this.DivisionSeries.Add(new Game());
-			this.DivisionSeries.Add(new Game());
-			this.DivisionSeries.Add(new Game());
+			{2, 3, 4},
+			{3, 3, 3},
+			{3, 3, 4},
+			{3, 3, 4}
+		};
 
-		}
+		public readonly int[,] DivisionAwayGames =
+		{
+			{3, 3, 4},
+			{3, 3, 4},
+			{2, 3, 4},
+			{3, 3, 3}
+		};
+
+		public const int DivisionSeriesGames = 3;
+
+		public List<Game> DivisionSeries { get; set; } = new List<Game>();
 	}
 }
