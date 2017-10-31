@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using BaseBallSchedule.Core;
+using BaseballSchedule.Core;
+using BaseballSchedule.Core.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BaseballScheduleUnitTests
 {
+#if DEBUG
+	[Serializable]
+#endif
 	/// <summary>
 	/// For testing the Baseball Schedule Generator
 	/// </summary>
@@ -12,14 +16,11 @@ namespace BaseballScheduleUnitTests
 	public class ScheduleGenerationTests
 	{
 
-		//Arrange
-		private readonly ScheduleGenerator _scheduleGenerator;
 
-		public ScheduleGenerationTests()
-		{
-			//Act
-			this._scheduleGenerator = new ScheduleGenerator();
-		}
+		//public ScheduleGenerationTests()
+		//{
+
+		//}
 
 		private TestContext _testContextInstance;
 
@@ -58,135 +59,102 @@ namespace BaseballScheduleUnitTests
 		#endregion
 
 		[TestMethod]
-		public void NumberOfNlWestDivisionTeams()
+		public void NumberOfDivisionSeriesSeries()
 		{
-			//Assert
-			var teams = this._scheduleGenerator.NLTeams
-				.Where(t => t.Division == League.Division.West);
-			Assert.IsTrue(teams.Count() == League.TeamsInDivision);
+			var series = new SeriesData();
+			Assert.IsTrue(series.DivisionSeries.ToList().Count == 24);
 		}
 
 		[TestMethod]
-		public void NumberOfNlEastDivisionTeams()
+		public void NumerOfDivisionSeriesGames()
 		{
-			var teams = this._scheduleGenerator.NLTeams
-				.Where(t => t.Division == League.Division.East);
-			Assert.IsTrue(teams.Count() == League.TeamsInDivision);
+			var series = new SeriesData();
+			var gameCount = series.DivisionSeries.Sum(divisionSeries => divisionSeries.Games.Count());
+
+			Assert.IsTrue(gameCount == 76);
 		}
 
 		[TestMethod]
-		public void NumberOfNlCentralDivisionTeams()
+		public void NumberOfDivisionGames()
 		{
-			var teams = this._scheduleGenerator.NLTeams
-				.Where(t => t.Division == League.Division.Central);
-			Assert.IsTrue(teams.Count() == League.TeamsInDivision);
+			var series = new SeriesData();
+
+			var homeGames = series.DivisionSeries
+				.Where(s => s.Seriestype == Series.SeriesType.Home)
+				.Sum(divisionSeries => divisionSeries.Games.Count());
+
+			var awayGames = series.DivisionSeries
+				.Where(s => s.Seriestype == Series.SeriesType.Away)
+				.Sum(divisionSeries => divisionSeries.Games.Count());
+
+			Assert.IsTrue(homeGames == 38 && awayGames == 38);
 		}
 
 		[TestMethod]
-		public void NumberOfNlLeagueTeams()
+		public void IsDivision()
 		{
-			var teams = this._scheduleGenerator.NLTeams
-				.Where(t => t.League == League.Circuit.NL);
-			Assert.IsTrue(teams.Count() == League.TeamsInLeague);
+			var division = BaseballScheduleHelper.GetRandomDivision();
+			Assert.IsTrue(division.GetType().IsEnum);
 		}
 
 		[TestMethod]
-		public void IsSameDivision()
+		public void GetOpponents()
 		{
-			var homeTeam = this._scheduleGenerator.GetTeamByName("SDP");
-			var awayTeam = this._scheduleGenerator.GetTeamByName("STL");
-			Assert.IsFalse(homeTeam.Division == awayTeam.Division);
-
+			var startDivision = BaseballScheduleHelper.GetRandomDivision();
+			var teams = BaseballScheduleHelper.GetLeagueTeamsByDivision(League.Circuit.NL, startDivision).ToList();
+			var team = BaseballScheduleHelper.GetRandomTeamFromList(teams);
+			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams);
+			Assert.IsTrue(opponents.All(t => !t.Equals(team)));
 		}
 
 		[TestMethod]
-		public void IsDifferentDivision()
+		public void GetDivisionTeams()
 		{
-			var homeTeam = this._scheduleGenerator.GetTeamByName("ATL");
-			var awayTeam = this._scheduleGenerator.GetTeamByName("STL");
-			Assert.IsTrue(homeTeam.Division != awayTeam.Division);
-
+			var division = BaseballScheduleHelper.GetRandomDivision();
+			var teams = BaseballScheduleHelper.GetLeagueTeamsByDivision(League.Circuit.NL, division).ToList();
+			var team = BaseballScheduleHelper.GetRandomTeamFromList(teams);
+			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams).ToList();
+			Assert.IsTrue(
+				teams.Count == 5
+				&& team.Division == division
+				&& teams.Count - opponents.Count == 1
+				&& opponents.All(t => !t.Equals(team)));
 		}
 
 		[TestMethod]
-		public void IsSameLeage()
+		public void GetTeamSchedule()
 		{
-			var homeTeam = this._scheduleGenerator.GetTeamByLeaugueId(0);
-			var awayTeam = this._scheduleGenerator.GetTeamByLeaugueId(14);
-			Assert.IsTrue(homeTeam.League == awayTeam.League);
+			var seriesData = new SeriesData();
+			var random = new Random();
+			var maxSeriesId = seriesData.DivisionSeries.Max(s => s.SeriesId);
+			var seriesId = random.Next(0, maxSeriesId);
+			var series = seriesData.DivisionSeries.Where(s => s.SeriesId == seriesId).ToList();
+
+			Assert.IsTrue(series.Count(h => h.Seriestype == Series.SeriesType.Home) == 3);
+			Assert.IsTrue(series.Count(h => h.Seriestype == Series.SeriesType.Away) == 3);
 		}
 
 		[TestMethod]
-		public void IsValidTeam()
+		public void RandomSeriesMatchupCount()
 		{
-			var team = this._scheduleGenerator.GetTeamByLeaugueId(14);
-			var teams = this._scheduleGenerator.NLTeams;
-			Assert.IsTrue(teams.Exists(t => t.LeagueId == team.LeagueId));
+			var seriesData = new SeriesData();
+			var series = BaseballScheduleHelper.GetRandomSeries(seriesData.DivisionSeries.ToList());
+			Assert.IsTrue(
+				series.Count(h => h.Seriestype == Series.SeriesType.Home)
+				+ series.Count(a => a.Seriestype == Series.SeriesType.Away)
+				== 6);
 		}
 
 		[TestMethod]
-		public void InvalidTeam()
+		public void ScheduleSeries()
 		{
-			var team = this._scheduleGenerator.GetTeamByLeaugueId(15);
-			Assert.IsTrue(team == null);
+			var division = BaseballScheduleHelper.GetRandomDivision();
+			var teams = BaseballScheduleHelper.GetLeagueTeamsByDivision(League.Circuit.NL, division).ToList();
+			var team = BaseballScheduleHelper.GetRandomTeamFromList(teams);
+			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams).ToList();
+			var schedule = ScheduleGenerator.ScheduleSeries(team, opponents);
+			Assert.IsTrue(schedule.GamesInSchedule.Count == 19);
 		}
-
-		[TestMethod]
-		public void OpponentsInDivision()
-		{
-			var teams = this._scheduleGenerator.NLTeams
-				.Where(t => t.Division == League.Division.West).ToList();
-			teams.Remove(teams.First(t => t.DivisionId == 0));
-			Assert.IsTrue(teams.Count == League.TeamsInDivision - 1);
-		}
-
-		[TestMethod]
-		public void NumberOfDivisionHomeGames()
-		{
-			var series = new Series();
-			var totalGames = 0;
-			var rows = series.HomeSeries.GetUpperBound(0);
-			var columns = series.HomeSeries.GetUpperBound(1);
-
-			for (var r = 0; r <= rows; r++)
-			{
-				for (var c = 0; c <= columns; c++)
-				{
-					totalGames = totalGames + series.HomeSeries[r, c];
-				}
-			}
-			Assert.IsTrue(totalGames == Series.NumberOfDivisionHomeGames);
-
-		}
-
-		[TestMethod]
-		public void NumerOfDivisionAwayGames()
-		{
-			var series = new Series();
-			var totalGames = 0;
-			var rows = series.AwaySeries.GetUpperBound(0);
-			var columns = series.AwaySeries.GetUpperBound(1);
-
-			for (var r = 0; r <= rows; r++)
-			{
-				for (var c = 0; c <= columns; c++)
-				{
-					totalGames = totalGames + series.AwaySeries[r, c];
-				}
-			}
-			Assert.IsTrue(totalGames == Series.NumberOfDivisionAwayGames);
-		}
-
-		[TestMethod]
-		public void NumberOfScheduledDivisionHomeGames()
-		{
-
-			Assert.IsTrue(this._scheduleGenerator.NumerOfScheduledDivisionHomeGames() == Series.NumberOfDivisionHomeGames);
-		}
-
 	}
-
-
-
 }
 
