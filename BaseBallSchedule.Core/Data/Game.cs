@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BaseBallSchedule.Core
+namespace BaseballSchedule.Core.Data
 {
 
 #if DEBUG
@@ -9,9 +9,9 @@ namespace BaseBallSchedule.Core
 
 	public class Game
     {
-        public string AwayTeam { get; set; }
+        public String AwayTeam { get; set; }
 
-	    public string HomeTeam { get; set; }
+	    public String HomeTeam { get; set; }
 
 		public DateTime GameDate { get; set; }
     }
