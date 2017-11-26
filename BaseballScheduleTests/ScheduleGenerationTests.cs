@@ -145,15 +145,34 @@ namespace BaseballScheduleUnitTests
 				== 6);
 		}
 
+
 		[TestMethod]
-		public void ScheduleSeries()
+		public void ScheduleDivisionTeams()
 		{
-			var division = BaseballScheduleHelper.GetRandomDivision();
-			var teams = BaseballScheduleHelper.GetLeagueTeamsByDivision(League.Circuit.NL, division).ToList();
-			var team = BaseballScheduleHelper.GetRandomTeamFromList(teams);
-			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams).ToList();
-			var schedule = ScheduleGenerator.ScheduleSeries(team, opponents);
-			Assert.IsTrue(schedule.GamesInSchedule.Count == 19);
+			var schedule = new Schedule();
+			var teams = BaseballScheduleHelper
+				.GetLeagueTeamsByDivision(League.Circuit.NL, League.Division.East).ToList();
+			var scheduleCountdown = 0;
+
+			foreach (var team in teams)
+			{
+				schedule = ScheduleGenerator.ScheduleDivisionSeries(team, teams, scheduleCountdown);
+				scheduleCountdown++;
+			}
+
+			var scheduledHomeGames =
+				from team in schedule.GamesInSchedule
+				where team.AwayTeam == "WSN" && team.HomeTeam == "PHI" || team.HomeTeam == "WSN" && team.AwayTeam == "PHI"
+				group team by team.AwayTeam
+				into h
+				select new {team = h.Key, Count = h.Count()};
+
+			foreach (var team in scheduledHomeGames)
+			{
+				Console.WriteLine($"{team.team} Home Games: {team.Count}");
+
+			}
+			Console.WriteLine($"Total Games: {schedule.GamesInSchedule.Count}");
 		}
 	}
 }
