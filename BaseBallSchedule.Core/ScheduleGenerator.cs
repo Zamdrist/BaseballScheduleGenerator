@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using BaseballSchedule.Core.Data;
 
@@ -9,40 +8,55 @@ namespace BaseballSchedule.Core
 	{
 		private static readonly Schedule Schedule = new Schedule();
 
-		public static Schedule ScheduleSeries(Team team, IList<Team> opponents)
+		private static void ScheduleSeries(Team team, Team opponent, Series series)
 		{
-			var seriesData = new SeriesData();
-			var seriesToSchedule =
-				BaseballScheduleHelper.GetRandomSeries(seriesData.DivisionSeries.ToList()).ToList();
-			var seriesCount = 0;
-
-			while (true)
+			foreach (var game in series.Games)
 			{
-				foreach (var opponent in opponents)
+				// ReSharper disable once SwitchStatementMissingSomeCases
+				switch (series.Seriestype)
 				{
-					foreach (var game in seriesToSchedule[seriesCount].Games)
-					{
-						// ReSharper disable once SwitchStatementMissingSomeCases
-						switch (seriesToSchedule[seriesCount].Seriestype)
-						{
-							case Series.SeriesType.Home:
-								game.HomeTeam = team.Name;
-								game.AwayTeam = opponent.Name;
-								break;
-							case Series.SeriesType.Away:
-								game.HomeTeam = opponent.Name;
-								game.AwayTeam = team.Name;
-								break;
-						}
-						ScheduleGenerator.Schedule.GamesInSchedule.Add(game);
-					}
-					seriesCount++;
-					if (seriesCount > seriesToSchedule.Count - 1)
-					{
-						return ScheduleGenerator.Schedule;
-					}
+					case Series.SeriesType.Home:
+						game.HomeTeam = team.Name;
+						game.AwayTeam = opponent.Name;
+						break;
+					case Series.SeriesType.Away:
+						game.HomeTeam = opponent.Name;
+						game.AwayTeam = team.Name;
+						break;
+				}
+				ScheduleGenerator.Schedule.GamesInSchedule.Add(game);
+			}
+		}
+
+		public static Schedule ScheduleDivisionSeries(Team team, List<Team> teams, int scheduleCountdown)
+		{
+			var seriesToSchedule = BaseballScheduleHelper.GetDivisionSeriesData();
+			var maxSeriesId = BaseballScheduleHelper.MaxSeriesId(seriesToSchedule);
+			var maxMatchupId = BaseballScheduleHelper.MaxMatchupId(seriesToSchedule);
+			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams).ToList();
+			var seriesCounter = 0;
+
+			foreach (var opponent in opponents)
+			{
+				var quarterSeries = BaseballScheduleHelper.GetQuarterSeries(
+					seriesToSchedule,
+					seriesCounter,
+					scheduleCountdown,
+					maxMatchupId);
+
+				foreach (var matchup in quarterSeries)
+				{
+					ScheduleGenerator.ScheduleSeries(team, opponent, matchup);
+
+				}
+
+				seriesCounter++;
+				if (seriesCounter == maxSeriesId + 1)
+				{
+					break;
 				}
 			}
+			return ScheduleGenerator.Schedule;
 		}
 	}
 }

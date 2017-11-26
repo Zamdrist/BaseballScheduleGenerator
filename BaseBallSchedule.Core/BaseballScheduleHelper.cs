@@ -31,14 +31,20 @@ namespace BaseballSchedule.Core
 
 		public static IEnumerable<Team> GetDivisionOpponents(Team team, IEnumerable<Team> teams)
 		{
-			var opponents = teams.Where(t => !t.Equals(team) && t.Division == team.Division);
+			var opponents = teams.Where(t => t.Name != team.Name && t.Division == team.Division);
 			return opponents;
 		}
 
-		private static int MaxSeriesId(IEnumerable<Series> series)
+		public static int MaxSeriesId(IEnumerable<Series> series)
 		{
-			return series.Max(s => s.SeriesId);
+			var maxId = series.Max(s => s.SeriesId);
+			return maxId;
+		}
 
+		public static int MaxMatchupId(IEnumerable<Series> series)
+		{
+			var maxId = series.Max(s => s.MatchupId);
+			return maxId;
 		}
 
 		public static IEnumerable<Series> GetRandomSeries(IList<Series> series)
@@ -47,6 +53,19 @@ namespace BaseballSchedule.Core
 			var random = new Random();
 			var randomSeriesId = random.Next(0, maxSeriesId);
 			return series.Where(s => s.SeriesId == randomSeriesId);
+		}
+
+		public static List<Series> GetQuarterSeries(List<Series> series, int seriesCounter, int scheduleCountdown, int maxMatchupId)
+		{
+			return series.FindAll(
+				s => s.SeriesId == seriesCounter - scheduleCountdown && s.MatchupId <= maxMatchupId).ToList();
+		}
+
+		public static List<Series> GetDivisionSeriesData()
+		{
+			var seriesData = new SeriesData();
+			return seriesData.DivisionSeries.ToList();
+
 		}
 	}
 }
