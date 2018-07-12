@@ -8,7 +8,7 @@ namespace BaseballSchedule.Core
 	{
 		private static readonly Schedule Schedule = new Schedule();
 
-		private static void ScheduleSeries(Team team, Team opponent, Series series)
+		public static void ScheduleSeries(Team team, Team opponent, Series series)
 		{
 			foreach (var game in series.Games)
 			{
@@ -28,34 +28,26 @@ namespace BaseballSchedule.Core
 			}
 		}
 
-		public static Schedule ScheduleDivisionSeries(Team team, List<Team> teams, int scheduleCountdown)
+		public static Schedule ScheduleDivisionSeries()
 		{
-			var seriesToSchedule = BaseballScheduleHelper.GetDivisionSeriesData();
-			var maxSeriesId = BaseballScheduleHelper.MaxSeriesId(seriesToSchedule);
-			var maxMatchupId = BaseballScheduleHelper.MaxMatchupId(seriesToSchedule);
-			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams).ToList();
-			var seriesCounter = 0;
+			var divisionSeries = new SeriesData();
+			var startDivision = BaseballScheduleHelper.GetRandomDivision();
+			var teams = BaseballScheduleHelper.GetLeagueTeamsByDivision(League.Circuit.NL, startDivision);
+			var team = BaseballScheduleHelper.GetRandomTeamFromList(teams);
+			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams);
 
-			foreach (var opponent in opponents)
+			foreach (var series in divisionSeries.DivisionSeries)
 			{
-				var quarterSeries = BaseballScheduleHelper.GetQuarterSeries(
-					seriesToSchedule,
-					seriesCounter,
-					scheduleCountdown,
-					maxMatchupId);
-
-				foreach (var matchup in quarterSeries)
+				var opponent = BaseballScheduleHelper.GetRandomTeamFromList(opponents);
+				ScheduleGenerator.ScheduleSeries(team, opponent, series);
+				opponents.Remove(opponent);
+				if (!opponents.Any())
 				{
-					ScheduleGenerator.ScheduleSeries(team, opponent, matchup);
-
+					opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams);
 				}
 
-				seriesCounter++;
-				if (seriesCounter == maxSeriesId + 1)
-				{
-					break;
-				}
 			}
+
 			return ScheduleGenerator.Schedule;
 		}
 	}

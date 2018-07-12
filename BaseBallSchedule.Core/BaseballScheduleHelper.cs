@@ -7,7 +7,7 @@ namespace BaseballSchedule.Core
 {
 	public static class BaseballScheduleHelper
 	{
-		public static IEnumerable<Team> GetLeagueTeamsByDivision(
+		public static IList<Team> GetLeagueTeamsByDivision(
 			League.Circuit league,
 			League.Division division)
 		{
@@ -29,13 +29,13 @@ namespace BaseballSchedule.Core
 			return (League.Division)division;
 		}
 
-		public static IEnumerable<Team> GetDivisionOpponents(Team team, IEnumerable<Team> teams)
+		public static IList<Team> GetDivisionOpponents(Team team, IList<Team> teams)
 		{
 			var opponents = teams.Where(t => t.Name != team.Name && t.Division == team.Division);
-			return opponents;
+			return opponents.ToList();
 		}
 
-		public static int MaxSeriesId(IEnumerable<Series> series)
+		private static int MaxSeriesId(IEnumerable<Series> series)
 		{
 			var maxId = series.Max(s => s.SeriesId);
 			return maxId;
@@ -57,7 +57,7 @@ namespace BaseballSchedule.Core
 
 		public static List<Series> GetQuarterSeries(List<Series> series, int seriesCounter, int scheduleCountdown, int maxMatchupId)
 		{
-			return series.FindAll(
+			return series.Where(
 				s => s.SeriesId == seriesCounter - scheduleCountdown && s.MatchupId <= maxMatchupId).ToList();
 		}
 
