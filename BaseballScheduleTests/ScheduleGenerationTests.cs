@@ -133,7 +133,33 @@ namespace BaseballScheduleUnitTests
 			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams);
 
 			var scheduledGames = ScheduleGenerator.ScheduleDivisionSeries(scheduledSeries,team,teams,opponents);
-			Assert.IsTrue(scheduledGames.GamesInSchedule.Count == 76);
+			var awayGames = from t in scheduledGames.GamesInSchedule
+				where t.AwayTeam == team
+				group t by t.AwayTeam
+				into a
+				select a.Count();
+
+			var homeGames = from t in scheduledGames.GamesInSchedule
+				where t.HomeTeam == team
+				group t by t.HomeTeam
+				into h
+				select h.Count();
+
+			var opponentGamesAway = from t in scheduledGames.GamesInSchedule
+				where t.AwayTeam == team
+				group t by t.HomeTeam
+				into a
+				select a.Count();
+
+			var opponentGamesHome = from t in scheduledGames.GamesInSchedule
+				where t.HomeTeam == team
+				group t by t.AwayTeam
+				into a
+				select a.Count();
+
+			//TODO: Assert scheduled team has played each opponent 19 times
+			Assert.IsTrue(awayGames.First() == 38 && homeGames.First() == 38); //Scheduled team should have 38 division home games and 38 division away games
+			Assert.IsTrue(scheduledGames.GamesInSchedule.Count == 76); //Total division games scheduled for team should be 76
 		}
 	}
 }
