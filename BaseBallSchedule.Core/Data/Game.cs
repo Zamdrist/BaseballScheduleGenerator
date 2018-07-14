@@ -9,9 +9,9 @@ namespace BaseballSchedule.Core.Data
 
 	public class Game
     {
-        public String AwayTeam { get; set; }
+        public Team AwayTeam { get; set; }
 
-	    public String HomeTeam { get; set; }
+	    public Team HomeTeam { get; set; }
 
 		public DateTime GameDate { get; set; }
     }

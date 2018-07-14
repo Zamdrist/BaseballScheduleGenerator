@@ -8,7 +8,7 @@ namespace BaseballSchedule.Core
 	{
 		private static readonly Schedule Schedule = new Schedule();
 
-		public static void ScheduleSeries(Team team, Team opponent, Series series)
+		private static void ScheduleSeries(Team team, Team opponent, Series series)
 		{
 			foreach (var game in series.Games)
 			{
@@ -16,27 +16,21 @@ namespace BaseballSchedule.Core
 				switch (series.Seriestype)
 				{
 					case Series.SeriesType.Home:
-						game.HomeTeam = team.Name;
-						game.AwayTeam = opponent.Name;
+						game.HomeTeam = team;
+						game.AwayTeam = opponent;
 						break;
 					case Series.SeriesType.Away:
-						game.HomeTeam = opponent.Name;
-						game.AwayTeam = team.Name;
+						game.HomeTeam = opponent;
+						game.AwayTeam = team;
 						break;
 				}
 				ScheduleGenerator.Schedule.GamesInSchedule.Add(game);
 			}
 		}
 
-		public static Schedule ScheduleDivisionSeries()
+		public static Schedule ScheduleDivisionSeries(SeriesData scheduledSeries, Team team, IList<Team> teams, IList<Team> opponents)
 		{
-			var divisionSeries = new SeriesData();
-			var startDivision = BaseballScheduleHelper.GetRandomDivision();
-			var teams = BaseballScheduleHelper.GetLeagueTeamsByDivision(League.Circuit.NL, startDivision);
-			var team = BaseballScheduleHelper.GetRandomTeamFromList(teams);
-			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams);
-
-			foreach (var series in divisionSeries.DivisionSeries)
+			foreach (var series in scheduledSeries.DivisionSeries)
 			{
 				var opponent = BaseballScheduleHelper.GetRandomTeamFromList(opponents);
 				ScheduleGenerator.ScheduleSeries(team, opponent, series);
@@ -45,9 +39,7 @@ namespace BaseballSchedule.Core
 				{
 					opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams);
 				}
-
 			}
-
 			return ScheduleGenerator.Schedule;
 		}
 	}

@@ -126,8 +126,14 @@ namespace BaseballScheduleUnitTests
 		[TestMethod]
 		public void ScheduleDivisionTeams()
 		{
-			ScheduleGenerator.ScheduleDivisionSeries();
-			Assert.IsTrue(true);
+			var scheduledSeries = new SeriesData();
+			var startDivision = BaseballScheduleHelper.GetRandomDivision();
+			var teams = BaseballScheduleHelper.GetLeagueTeamsByDivision(League.Circuit.NL, startDivision);
+			var team = BaseballScheduleHelper.GetRandomTeamFromList(teams);
+			var opponents = BaseballScheduleHelper.GetDivisionOpponents(team, teams);
+
+			var scheduledGames = ScheduleGenerator.ScheduleDivisionSeries(scheduledSeries,team,teams,opponents);
+			Assert.IsTrue(scheduledGames.GamesInSchedule.Count == 76);
 		}
 	}
 }
